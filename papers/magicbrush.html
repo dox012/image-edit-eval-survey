@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MagicBrush - Image Edit Eval Survey</title>
+  <style>:root { --fg:#111; --muted:#555; --bg:#fff; --line:#d0d7de; --soft:#f6f8fa; --accent:#0969da; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; line-height:1.7; margin:28px auto; max-width:1080px; padding:0 18px; color:var(--fg); background:var(--bg); }
+h1,h2,h3 { line-height:1.25; }
+a { color:var(--accent); text-decoration:none; } a:hover { text-decoration:underline; }
+.meta { color:var(--muted); margin:6px 0 18px; }
+.note { background:var(--soft); border-left:4px solid var(--line); padding:12px 14px; margin:16px 0; }
+.grid { display:grid; grid-template-columns:160px 1fr; gap:8px 14px; }
+.k { color:var(--muted); font-weight:600; }
+blockquote { margin:8px 0; padding:8px 12px; border-left:4px solid var(--line); background:var(--soft); }
+li { margin:4px 0; }
+.nav { margin-bottom:18px; }</style>
+</head>
+<body>
+  <div class="nav"><a href="../index.html">← 返回主 survey</a></div>
+  <h1>MagicBrush</h1>
+  <div class="meta">2023 · instruction-guided image editing 数据集 / benchmark</div>
+  <div class="grid">
+    <div class="k">链接</div><div><a href="https://arxiv.org/abs/2306.10012v3">arXiv</a> · <a href="https://huggingface.co/datasets/osunlp/MagicBrush">Dataset</a></div>
+    <div class="k">一句话定位</div><div>MagicBrush 是人工标注的真实图像编辑数据集，包含原图、编辑指令和目标图，常用于训练和评测 instruction-guided image editing 模型。</div>
+  </div>
+
+  <h2>怎么评</h2>
+  <ul><li>使用 source image、instruction、target image 三元组。</li>
+<li>可评估指令执行、目标图匹配、编辑质量与多轮编辑能力。</li>
+<li>常作为局部/真实图像编辑 benchmark。</li></ul>
+
+  <h2>创新点</h2>
+  <ul><li>人工构造高质量编辑前后对，而不是纯合成 prompt。</li>
+<li>支持更真实的 instruction editing 评估。</li></ul>
+
+  <h2>局限</h2>
+  <ul><li>单独使用时，对 reward 的维度拆分不如 TIEdit/LMM4Edit 明确。</li>
+<li>需要额外设计 preserve/quality 分项。</li></ul>
+
+  <h2>对 reward 设计的启发</h2>
+  <div class="note">适合作为 supervised / preference 数据来源，source-target pair 可以用于 target edit reward 与 preservation reward 的监督。</div>
+</body>
+</html>

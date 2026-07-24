@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EditBench - Image Edit Eval Survey</title>
+  <style>:root { --fg:#111; --muted:#555; --bg:#fff; --line:#d0d7de; --soft:#f6f8fa; --accent:#0969da; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; line-height:1.7; margin:28px auto; max-width:1080px; padding:0 18px; color:var(--fg); background:var(--bg); }
+h1,h2,h3 { line-height:1.25; }
+a { color:var(--accent); text-decoration:none; } a:hover { text-decoration:underline; }
+.meta { color:var(--muted); margin:6px 0 18px; }
+.note { background:var(--soft); border-left:4px solid var(--line); padding:12px 14px; margin:16px 0; }
+.grid { display:grid; grid-template-columns:160px 1fr; gap:8px 14px; }
+.k { color:var(--muted); font-weight:600; }
+blockquote { margin:8px 0; padding:8px 12px; border-left:4px solid var(--line); background:var(--soft); }
+li { margin:4px 0; }
+.nav { margin-bottom:18px; }</style>
+</head>
+<body>
+  <div class="nav"><a href="../index.html">← 返回主 survey</a></div>
+  <h1>EditBench</h1>
+  <div class="meta">2022 · 编辑评测 benchmark</div>
+  <div class="grid">
+    <div class="k">链接</div><div><a href="https://arxiv.org/abs/2212.06909v2">arXiv</a></div>
+    <div class="k">一句话定位</div><div>EditBench 是早期用于评估 text-guided / mask-based image editing 的 benchmark，重点在于用标准化输入、目标文本和编辑任务来比较不同编辑模型。</div>
+  </div>
+
+  <h2>怎么评</h2>
+  <ul><li>以文本条件和图像编辑结果为核心，比较编辑后图像是否符合目标描述。</li>
+<li>常与 CLIPScore、人工偏好、图像质量指标一起使用。</li>
+<li>更偏早期标准化 benchmark，而不是专门训练 reward model。</li></ul>
+
+  <h2>创新点</h2>
+  <ul><li>把图像编辑从零散 case study 推向可重复 benchmark。</li>
+<li>强调同一批编辑任务下模型之间的横向比较。</li></ul>
+
+  <h2>局限</h2>
+  <ul><li>对编辑前后“非目标区域保持”的显式建模较弱。</li>
+<li>更依赖整体图文一致性，难拆分具体错误来源。</li></ul>
+
+  <h2>对 reward 设计的启发</h2>
+  <div class="note">适合作为 instruction reward / target alignment 的任务集合来源，但需要额外加入 region preservation 和 quality reward。</div>
+</body>
+</html>

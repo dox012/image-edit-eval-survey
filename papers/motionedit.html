@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MotionEdit - Image Edit Eval Survey</title>
+  <style>:root { --fg:#111; --muted:#555; --bg:#fff; --line:#d0d7de; --soft:#f6f8fa; --accent:#0969da; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; line-height:1.7; margin:28px auto; max-width:1080px; padding:0 18px; color:var(--fg); background:var(--bg); }
+h1,h2,h3 { line-height:1.25; }
+a { color:var(--accent); text-decoration:none; } a:hover { text-decoration:underline; }
+.meta { color:var(--muted); margin:6px 0 18px; }
+.note { background:var(--soft); border-left:4px solid var(--line); padding:12px 14px; margin:16px 0; }
+.grid { display:grid; grid-template-columns:160px 1fr; gap:8px 14px; }
+.k { color:var(--muted); font-weight:600; }
+blockquote { margin:8px 0; padding:8px 12px; border-left:4px solid var(--line); background:var(--soft); }
+li { margin:4px 0; }
+.nav { margin-bottom:18px; }</style>
+</head>
+<body>
+  <div class="nav"><a href="../index.html">← 返回主 survey</a></div>
+  <h1>MotionEdit</h1>
+  <div class="meta">2025/2026 · motion-centric image editing benchmark / reward</div>
+  <div class="grid">
+    <div class="k">链接</div><div><a href="https://arxiv.org/abs/2512.10284v2">arXiv</a> · <a href="https://motion-edit.github.io">Project</a></div>
+    <div class="k">一句话定位</div><div>MotionEdit 专注 motion-centric image editing：修改主体动作和交互，同时保持身份、结构和物理合理性。它的 optical-flow reward 是动作编辑专用的一致性信号。</div>
+  </div>
+
+  <h2>怎么评</h2>
+  <ul><li>Discriminative evaluation：比较 input→edited 与 input→ground-truth 的 optical flow。</li>
+<li>Generative evaluation：用 MLLM 评 fidelity、preservation、coherence 和 overall quality。</li>
+<li>Reward 函数衡量 model-predicted motion 与 ground-truth motion edit 的对齐。</li></ul>
+
+  <h2>创新点</h2>
+  <ul><li>把 motion consistency 做成可优化 reward。</li>
+<li>强调 identity / structure / physical plausibility 在动作编辑中的重要性。</li></ul>
+
+  <h2>局限</h2>
+  <ul><li>optical flow 对运动/姿态类任务有效，但不是通用一致性指标。</li>
+<li>属性、风格、文字、商品等编辑需要其他 task-specific reward。</li></ul>
+
+  <h2>对 reward 设计的启发</h2>
+  <div class="note">启发是：通用 reward 外应加 task-specific consistency；motion 类用 flow，人脸类用 identity，文档类用 OCR。</div>
+</body>
+</html>

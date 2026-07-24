@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TIEdit / Evaluating Image Editing with LLMs - Image Edit Eval Survey</title>
+  <style>:root { --fg:#111; --muted:#555; --bg:#fff; --line:#d0d7de; --soft:#f6f8fa; --accent:#0969da; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; line-height:1.7; margin:28px auto; max-width:1080px; padding:0 18px; color:var(--fg); background:var(--bg); }
+h1,h2,h3 { line-height:1.25; }
+a { color:var(--accent); text-decoration:none; } a:hover { text-decoration:underline; }
+.meta { color:var(--muted); margin:6px 0 18px; }
+.note { background:var(--soft); border-left:4px solid var(--line); padding:12px 14px; margin:16px 0; }
+.grid { display:grid; grid-template-columns:160px 1fr; gap:8px 14px; }
+.k { color:var(--muted); font-weight:600; }
+blockquote { margin:8px 0; padding:8px 12px; border-left:4px solid var(--line); background:var(--soft); }
+li { margin:4px 0; }
+.nav { margin-bottom:18px; }</style>
+</head>
+<body>
+  <div class="nav"><a href="../index.html">← 返回主 survey</a></div>
+  <h1>TIEdit / Evaluating Image Editing with LLMs</h1>
+  <div class="meta">2025/2026 · 三维 MOS 图像编辑评估 benchmark</div>
+  <div class="grid">
+    <div class="k">链接</div><div><a href="https://arxiv.org/abs/2603.19775v2">arXiv</a></div>
+    <div class="k">一句话定位</div><div>TIEdit 直接讨论图像编辑评估应同时考虑 perceptual quality、editing alignment 和 content preservation，是 reward 设计里最清晰的三轴模板之一。</div>
+  </div>
+
+  <h2>怎么评</h2>
+  <ul><li>三维 MOS：感知质量、文本/编辑对齐、原图内容保持。</li>
+<li>用 LLM 辅助构造和分析编辑评估。</li>
+<li>强调可靠评估不能只看图文一致性。</li></ul>
+
+  <h2>创新点</h2>
+  <ul><li>把编辑评估显式拆成三维，而不是单一总分。</li>
+<li>content preservation 被提升为与 alignment 同等重要的维度。</li></ul>
+
+  <h2>局限</h2>
+  <ul><li>MOS 标注成本较高。</li>
+<li>如果直接转 reward，需要处理多维分数的权重与冲突。</li></ul>
+
+  <h2>对 reward 设计的启发</h2>
+  <div class="note">可直接设计 R = R_quality + R_alignment + R_preservation，并按编辑类型动态调权。</div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AugCLIP / Preserve or Modify? - Image Edit Eval Survey</title>
+  <style>:root { --fg:#111; --muted:#555; --bg:#fff; --line:#d0d7de; --soft:#f6f8fa; --accent:#0969da; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; line-height:1.7; margin:28px auto; max-width:1080px; padding:0 18px; color:var(--fg); background:var(--bg); }
+h1,h2,h3 { line-height:1.25; }
+a { color:var(--accent); text-decoration:none; } a:hover { text-decoration:underline; }
+.meta { color:var(--muted); margin:6px 0 18px; }
+.note { background:var(--soft); border-left:4px solid var(--line); padding:12px 14px; margin:16px 0; }
+.grid { display:grid; grid-template-columns:160px 1fr; gap:8px 14px; }
+.k { color:var(--muted); font-weight:600; }
+blockquote { margin:8px 0; padding:8px 12px; border-left:4px solid var(--line); background:var(--soft); }
+li { margin:4px 0; }
+.nav { margin-bottom:18px; }</style>
+</head>
+<body>
+  <div class="nav"><a href="../index.html">← 返回主 survey</a></div>
+  <h1>AugCLIP / Preserve or Modify?</h1>
+  <div class="meta">2024 · preserve-modify 平衡指标</div>
+  <div class="grid">
+    <div class="k">链接</div><div><a href="https://arxiv.org/abs/2410.11374v3">arXiv</a></div>
+    <div class="k">一句话定位</div><div>AugCLIP 指出传统指标存在 context-blindness：CLIPScore 倾向鼓励修改，全图相似度则倾向保留，因而提出更平衡的编辑评估方式。</div>
+  </div>
+
+  <h2>怎么评</h2>
+  <ul><li>估计 ideal edited image 的表示，使其既符合目标文本又尽量最小化对原图的无关改变。</li>
+<li>分析 CLIPScore 等指标在 modification/preservation 上的偏置。</li>
+<li>在多个 editing benchmark 上验证。</li></ul>
+
+  <h2>创新点</h2>
+  <ul><li>明确提出指标偏置：有些指标偏 modification，有些偏 preservation。</li>
+<li>把“最小必要修改”作为评估思想。</li></ul>
+
+  <h2>局限</h2>
+  <ul><li>仍主要是表示空间指标，细粒度对象/区域解释性有限。</li>
+<li>专用 task consistency 仍需外部指标。</li></ul>
+
+  <h2>对 reward 设计的启发</h2>
+  <div class="note">reward 设计应惩罚过度编辑：在满足目标文本的前提下，鼓励最小必要改变。</div>
+</body>
+</html>

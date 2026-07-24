@@ -50,18 +50,24 @@
     <div class="timeline-item">
       <div class="year">2022–2023：早期标准化 benchmark 与 human study</div>
       <p>这一阶段主要关注如何建立可比较的基准、引入人类评分、以及用 CLIP / VLM 做自动评估。</p>
-      <p>代表：<a href="https://arxiv.org/abs/2212.06909v2">EditBench</a>、<a href="https://arxiv.org/abs/2310.02426v1">EditVal</a>、<a href="https://arxiv.org/abs/2306.10012v3">MagicBrush</a>、<a href="https://arxiv.org/abs/2309.17102v2">MGIE</a>。</p>
+      <p>代表：<a href="papers/editbench.html">EditBench</a>、<a href="papers/editval.html">EditVal</a>、<a href="papers/magicbrush.html">MagicBrush</a>、<a href="papers/mgie.html">MGIE</a>。</p>
     </div>
     <div class="timeline-item">
       <div class="year">2024：开始系统讨论 preservation / modification 平衡</div>
       <p>这一阶段出现了明确批评：单纯 CLIPScore 偏向 modification，而全图相似度偏向 preservation。</p>
-      <p>代表：<a href="https://arxiv.org/abs/2410.11374v3">AugCLIP</a>、<a href="https://arxiv.org/abs/2506.13827v1">BPM</a>、<a href="https://arxiv.org/abs/2505.11493v3">GIE-Bench</a>。</p>
+      <p>代表：<a href="papers/augclip.html">AugCLIP</a>、<a href="papers/bpm.html">BPM</a>、<a href="papers/gie-bench.html">GIE-Bench</a>。</p>
     </div>
     <div class="timeline-item">
       <div class="year">2025：LLM/MLLM judge、reward model、human-aligned benchmark 成为主流</div>
       <p>这一阶段的重点是把图像编辑评分做得更细粒度、更人类对齐，并服务于 RL / reward learning。</p>
-      <p>代表：<a href="https://arxiv.org/abs/2603.19775v2">TIEdit</a>、<a href="https://arxiv.org/abs/2507.16193v2">LMM4Edit</a>、<a href="https://arxiv.org/abs/2602.13028v1">Human-Aligned MLLM Judges</a>、<a href="https://arxiv.org/abs/2509.23909v3">EditScore</a>、<a href="https://arxiv.org/abs/2512.10284v2">MotionEdit</a>。</p>
+      <p>代表：<a href="papers/tiedit.html">TIEdit</a>、<a href="papers/lmm4edit.html">LMM4Edit</a>、<a href="papers/human-aligned-mllm-judges.html">Human-Aligned MLLM Judges</a>、<a href="papers/editscore.html">EditScore</a>、<a href="papers/motionedit.html">MotionEdit</a>。</p>
     </div>
+  </div>
+
+
+  <h2>论文子页面</h2>
+  <div class="note ok">
+    <strong>新增：</strong>已为 survey 中涉及的主要论文 / benchmark 建立逐篇子页面，见 <a href="papers/index.html">Paper Notes</a>。
   </div>
 
   <h2>3. 评测方法与指标总览</h2>
@@ -116,7 +122,7 @@
 
   <h2>4. 原文锚点：每种方法在讲什么</h2>
 
-  <h3>4.1 TIEdit / Evaluating Image Editing with LLMs</h3>
+  <h3>4.1 <a href="papers/tiedit.html">TIEdit / Evaluating Image Editing with LLMs</a></h3>
   <blockquote>
     “reliable assessment should simultaneously consider perceptual quality, alignment with textual instructions, and preservation of original image content.”
   </blockquote>
@@ -125,7 +131,7 @@
   </blockquote>
   <p>解读：TIEdit 把图像编辑评分明确拆成三轴，是一类非常适合作为 reward 设计模板的 benchmark。</p>
 
-  <h3>4.2 LMM4Edit</h3>
+  <h3>4.2 <a href="papers/lmm4edit.html">LMM4Edit</a></h3>
   <blockquote>
     “EBench-18K includes 1,080 source images with corresponding editing prompts across 21 tasks, 18K+ edited images produced by 17 state-of-the-art TIE models, 55K+ mean opinion scores (MOSs) ... and 18K+ question-answering (QA) pairs.”
   </blockquote>
@@ -134,7 +140,7 @@
   </blockquote>
   <p>解读：LMM4Edit 强调“多维度 + QA”，适合把 reward 从单分数扩展成可解释多维分数。</p>
 
-  <h3>4.3 Human-Aligned MLLM Judges</h3>
+  <h3>4.3 <a href="papers/human-aligned-mllm-judges.html">Human-Aligned MLLM Judges</a></h3>
   <blockquote>
     “decomposes common evaluation notions into twelve fine-grained interpretable factors spanning image preservation, edit quality, and instruction fidelity.”
   </blockquote>
@@ -143,7 +149,7 @@
   </blockquote>
   <p>解读：与其把评分压成一个黑盒总分，不如拆成多个可解释因子，先定位再聚合。</p>
 
-  <h3>4.4 EditScore / EditReward-Bench</h3>
+  <h3>4.4 <a href="papers/editscore.html">EditScore / EditReward-Bench</a></h3>
   <blockquote>
     “the lack of a high-fidelity, efficient reward signal.”
   </blockquote>
@@ -158,7 +164,7 @@
   </blockquote>
   <p>解读：这是最接近“怎么把评估做成 reward”的路线。SC 负责改对，PQ 负责别改坏。</p>
 
-  <h3>4.5 BPM / Balancing Preservation and Modification</h3>
+  <h3>4.5 <a href="papers/bpm.html">BPM / Balancing Preservation and Modification</a></h3>
   <blockquote>
     “explicitly disentangling the image into editing-relevant and irrelevant regions for specific consideration.”
   </blockquote>
@@ -167,7 +173,7 @@
   </blockquote>
   <p>解读：这条路线最适合解决“preservation reward 难给”的问题，因为它直接把 reward 拆成 region-level 和 semantic-level 两层。</p>
 
-  <h3>4.6 AugCLIP / Preserve or Modify?</h3>
+  <h3>4.6 <a href="papers/augclip.html">AugCLIP / Preserve or Modify?</a></h3>
   <blockquote>
     “existing metrics have a context-blindness problem... biasing towards either modification or preservation.”
   </blockquote>
@@ -178,7 +184,7 @@
   </blockquote>
   <p>解读：单一指标会偏。reward 设计必须显式建模 preserve vs modify 的 trade-off。</p>
 
-  <h3>4.7 GIE-Bench</h3>
+  <h3>4.7 <a href="papers/gie-bench.html">GIE-Bench</a></h3>
   <blockquote>
     “functional correctness, assessed via automatically generated multiple-choice questions...”
   </blockquote>
@@ -190,7 +196,7 @@
   </blockquote>
   <p>解读：这是一个很实用的“VQA + mask 外保留”范式，尤其适合局部编辑。</p>
 
-  <h3>4.8 MotionEdit</h3>
+  <h3>4.8 <a href="papers/motionedit.html">MotionEdit</a></h3>
   <blockquote>
     “For discriminative evaluation, we ... comparing the optical flow ... between the input and model-edited images against the input–ground truth flow.”
   </blockquote>
@@ -284,13 +290,13 @@ R_total = w1*R_inst + w2*R_edit + w3*R_pres + w4*R_qual + w5*R_task
   <h2>10. 参考论文</h2>
   <ul>
     <li><a href="https://arxiv.org/abs/2603.19775v2">TIEdit / Evaluating Image Editing with LLMs</a></li>
-    <li><a href="https://arxiv.org/abs/2507.16193v2">LMM4Edit</a></li>
-    <li><a href="https://arxiv.org/abs/2602.13028v1">Human-Aligned MLLM Judges</a></li>
+    <li><a href="papers/lmm4edit.html">LMM4Edit</a></li>
+    <li><a href="papers/human-aligned-mllm-judges.html">Human-Aligned MLLM Judges</a></li>
     <li><a href="https://arxiv.org/abs/2509.23909v3">EditScore / EditReward-Bench</a></li>
-    <li><a href="https://arxiv.org/abs/2506.13827v1">BPM</a></li>
-    <li><a href="https://arxiv.org/abs/2410.11374v3">AugCLIP</a></li>
-    <li><a href="https://arxiv.org/abs/2505.11493v3">GIE-Bench</a></li>
-    <li><a href="https://arxiv.org/abs/2512.10284v2">MotionEdit</a></li>
+    <li><a href="papers/bpm.html">BPM</a></li>
+    <li><a href="papers/augclip.html">AugCLIP</a></li>
+    <li><a href="papers/gie-bench.html">GIE-Bench</a></li>
+    <li><a href="papers/motionedit.html">MotionEdit</a></li>
   </ul>
 
   <div class="note">

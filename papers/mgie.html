@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MGIE - Image Edit Eval Survey</title>
+  <style>:root { --fg:#111; --muted:#555; --bg:#fff; --line:#d0d7de; --soft:#f6f8fa; --accent:#0969da; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; line-height:1.7; margin:28px auto; max-width:1080px; padding:0 18px; color:var(--fg); background:var(--bg); }
+h1,h2,h3 { line-height:1.25; }
+a { color:var(--accent); text-decoration:none; } a:hover { text-decoration:underline; }
+.meta { color:var(--muted); margin:6px 0 18px; }
+.note { background:var(--soft); border-left:4px solid var(--line); padding:12px 14px; margin:16px 0; }
+.grid { display:grid; grid-template-columns:160px 1fr; gap:8px 14px; }
+.k { color:var(--muted); font-weight:600; }
+blockquote { margin:8px 0; padding:8px 12px; border-left:4px solid var(--line); background:var(--soft); }
+li { margin:4px 0; }
+.nav { margin-bottom:18px; }</style>
+</head>
+<body>
+  <div class="nav"><a href="../index.html">← 返回主 survey</a></div>
+  <h1>MGIE</h1>
+  <div class="meta">2023 · MLLM-guided image editing 方法 / 评测基线</div>
+  <div class="grid">
+    <div class="k">链接</div><div><a href="https://arxiv.org/abs/2309.17102v2">arXiv</a></div>
+    <div class="k">一句话定位</div><div>MGIE 使用 multimodal large language model 辅助理解和重写编辑指令，是 MLLM 参与图像编辑和评估的代表性早期工作之一。</div>
+  </div>
+
+  <h2>怎么评</h2>
+  <ul><li>关注指令理解是否改善编辑结果。</li>
+<li>常在 MagicBrush 等编辑数据上做模型比较。</li>
+<li>评估重点是编辑成功率、图文一致性和人类偏好。</li></ul>
+
+  <h2>创新点</h2>
+  <ul><li>把 MLLM 的语言/视觉理解能力引入编辑指令解析。</li>
+<li>为后续 LMM-as-judge / LMM metric 提供思路。</li></ul>
+
+  <h2>局限</h2>
+  <ul><li>主要是编辑模型方法，不是专门的评估 benchmark。</li>
+<li>缺少独立 reward model。</li></ul>
+
+  <h2>对 reward 设计的启发</h2>
+  <div class="note">启发是：reward 前可以先用 LMM 对 instruction 做结构化解析，明确目标对象、动作、属性和需保持区域。</div>
+</body>
+</html>

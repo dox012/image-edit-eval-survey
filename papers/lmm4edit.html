@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LMM4Edit - Image Edit Eval Survey</title>
+  <style>:root { --fg:#111; --muted:#555; --bg:#fff; --line:#d0d7de; --soft:#f6f8fa; --accent:#0969da; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; line-height:1.7; margin:28px auto; max-width:1080px; padding:0 18px; color:var(--fg); background:var(--bg); }
+h1,h2,h3 { line-height:1.25; }
+a { color:var(--accent); text-decoration:none; } a:hover { text-decoration:underline; }
+.meta { color:var(--muted); margin:6px 0 18px; }
+.note { background:var(--soft); border-left:4px solid var(--line); padding:12px 14px; margin:16px 0; }
+.grid { display:grid; grid-template-columns:160px 1fr; gap:8px 14px; }
+.k { color:var(--muted); font-weight:600; }
+blockquote { margin:8px 0; padding:8px 12px; border-left:4px solid var(--line); background:var(--soft); }
+li { margin:4px 0; }
+.nav { margin-bottom:18px; }</style>
+</head>
+<body>
+  <div class="nav"><a href="../index.html">← 返回主 survey</a></div>
+  <h1>LMM4Edit</h1>
+  <div class="meta">2025 · LMM-based 图像编辑评价模型 / EBench-18K</div>
+  <div class="grid">
+    <div class="k">链接</div><div><a href="https://arxiv.org/abs/2507.16193v2">arXiv</a> · <a href="https://github.com/IntMeGroup/LMM4Edit">Code/Data</a></div>
+    <div class="k">一句话定位</div><div>LMM4Edit 构建 EBench-18K，并训练/提出一个 LMM-based metric，从 perceptual quality、editing alignment、attribute preservation 和 task-specific QA accuracy 综合评价图像编辑。</div>
+  </div>
+
+  <h2>怎么评</h2>
+  <ul><li>EBench-18K：source images、editing prompts、多模型编辑结果、MOS 与 QA pairs。</li>
+<li>四维评价：质量、编辑对齐、属性保持、任务 QA 正确率。</li>
+<li>用 LMM 将图、文、变化统一到一个可解释评分框架。</li></ul>
+
+  <h2>创新点</h2>
+  <ul><li>把 QA accuracy 引入图像编辑评价，增强细粒度可解释性。</li>
+<li>LMM metric 比传统 CLIP/LPIPS 更接近人类偏好。</li></ul>
+
+  <h2>局限</h2>
+  <ul><li>依赖 LMM 推理，成本高于传统指标。</li>
+<li>需要注意 judge prompt 和模型版本造成的评分漂移。</li></ul>
+
+  <h2>对 reward 设计的启发</h2>
+  <div class="note">适合把 reward 做成多头：quality head、alignment head、preservation head、QA correctness head。</div>
+</body>
+</html>
