@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Text-to-Image Evaluation Survey</title>
+  <style>:root { --fg:#111; --muted:#555; --bg:#fff; --line:#d0d7de; --soft:#f6f8fa; --accent:#0969da; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; line-height:1.68; margin:28px auto; max-width:1280px; padding:0 18px; color:var(--fg); background:var(--bg); }
+h1,h2,h3 { line-height:1.24; }
+a { color:var(--accent); text-decoration:none; } a:hover { text-decoration:underline; }
+.meta { color:var(--muted); margin:6px 0 18px; }
+.note { background:var(--soft); border-left:4px solid var(--line); padding:12px 14px; margin:16px 0; }
+.warn { border-left-color:#d4a72c; background:#fff8c5; }
+.ok { border-left-color:#2da44e; background:#dafbe1; }
+table { width:100%; border-collapse:collapse; margin:14px 0 26px; font-size:14px; }
+th,td { border:1px solid var(--line); padding:8px 10px; vertical-align:top; }
+th { background:var(--soft); text-align:left; }
+blockquote { margin:8px 0; padding:8px 12px; border-left:4px solid var(--line); background:var(--soft); }
+code { background:var(--soft); padding:0.1rem 0.3rem; border-radius:4px; }
+.tag { display:inline-block; padding:2px 8px; border:1px solid var(--line); border-radius:999px; margin-right:6px; margin-bottom:4px; font-size:12px; background:#fff; }
+.small { color:var(--muted); font-size:13px; }
+.nav { margin-bottom:18px; }</style>
+</head>
+<body>
+  <div class="nav"><a href="../index.html">← 返回 Image Edit Eval Survey</a></div>
+  <h1>Text-to-Image Evaluation Survey</h1>
+  <div class="meta">补充视角：先梳理文生图评估怎么做，再对比图像编辑评估多出来的问题。</div>
+
+  <div class="note warn">
+    <strong>核心结论：</strong>文生图评估主要解决 <code>text prompt → generated image</code> 的 prompt following / image quality；图像编辑评估则是 <code>source image + instruction → edited image</code>，因此额外需要评 source preservation、target-region modification、before-after consistency 和 over-edit/under-edit。
+  </div>
+
+  <h2>1. 文生图评估主要评什么</h2>
+  <ul>
+    <li><strong>图文一致性 / prompt following：</strong>物体、属性、数量、空间关系、动作、场景、风格是否符合 prompt。</li>
+    <li><strong>组合泛化：</strong>多对象组合、属性绑定、对象关系、counting、3D spatial relation、复杂长 prompt。</li>
+    <li><strong>图像质量：</strong>photorealism、aesthetics、artifacts、diversity。</li>
+    <li><strong>人类偏好：</strong>pairwise preference、rating、ranking，并训练 reward / scorer。</li>
+    <li><strong>可解释自动评估：</strong>VQA / detection / MLLM judge，把整体图文一致性拆成问题或对象级检查。</li>
+  </ul>
+
+  <h2>2. 时间线</h2>
+  <table>
+    <thead><tr><th>时间</th><th>代表方法</th><th>评估范式</th><th>意义</th></tr></thead>
+    <tbody>
+      <tr><td>2022</td><td>DrawBench、PartiPrompts</td><td>prompt suite + human preference / qualitative case study</td><td>建立复杂 prompt 横评集合。</td></tr>
+      <tr><td>2023</td><td>TIFA、GenEval、T2I-CompBench</td><td>VQA / detection / compositional metrics</td><td>从整体 CLIP/FID 走向细粒度 prompt following。</td></tr>
+      <tr><td>2023</td><td>ImageReward、PickScore</td><td>human preference reward / scorer</td><td>从评估走向 reward learning 和模型优化。</td></tr>
+      <tr><td>2024+</td><td>VQAScore、DPG-Bench、MLLM judges</td><td>VQA yes-probability / dense prompt / MLLM evaluation</td><td>更关注长 prompt、关系理解和可解释自动评分。</td></tr>
+    </tbody>
+  </table>
+
+  <h2>3. 代表论文 / benchmark</h2>
+  <table>
+    <thead><tr><th>年份</th><th>论文 / Benchmark</th><th>类型</th><th>核心贡献</th><th>适合评什么</th></tr></thead>
+    <tbody><tr><td>2022</td><td><a href="https://arxiv.org/abs/2205.11487">DrawBench / Imagen</a></td><td>人工偏好 + prompt benchmark</td><td>Imagen 论文引入 DrawBench，用一组挑战性 prompt 对 text-to-image 模型做 side-by-side 人工偏好比较，强调语言理解和复杂描述生成能力。</td><td>适合作为 qualitative / human preference benchmark，但自动化指标较少。</td></tr>
+<tr><td>2022</td><td><a href="https://arxiv.org/abs/2206.10789">PartiPrompts (P2)</a></td><td>1600+ prompt benchmark</td><td>PartiPrompts 是 Parti 论文提出的 1600+ 英文 prompts，覆盖类别、难度、风格、世界知识和复杂组合，用于横向观察 T2I 模型能力。</td><td>适合人工横评和 case study，但不是细粒度自动判分框架。</td></tr>
+<tr><td>2023</td><td><a href="https://arxiv.org/abs/2303.11897">TIFA</a></td><td>QA-based faithfulness metric</td><td>TIFA 把 prompt 自动分解为 question-answer pairs，再用 VQA 模型检查生成图是否能回答这些问题。TIFA v1.0 包含 4K text inputs 和 25K questions。</td><td>可解释、细粒度、reference-free，适合 text-image faithfulness。</td></tr>
+<tr><td>2023</td><td><a href="https://arxiv.org/abs/2310.11513">GenEval</a></td><td>object-level alignment</td><td>GenEval 用目标检测和视觉模型评估 object co-occurrence、count、color、position、color attribution 等对象级组合属性。</td><td>比 CLIPScore 更适合 object-level compositional alignment。</td></tr>
+<tr><td>2023/2025</td><td><a href="https://arxiv.org/abs/2307.06350">T2I-CompBench++</a></td><td>compositional benchmark</td><td>T2I-CompBench++ 包含 8K compositional prompts，覆盖属性绑定、对象关系、数量、3D 空间关系和复杂组合。</td><td>强调复杂组合生成能力，用检测、VQA、MLLM 等多种指标评估。</td></tr>
+<tr><td>2023</td><td><a href="https://arxiv.org/abs/2304.05977">ImageReward</a></td><td>human preference reward model</td><td>ImageReward 通过 137K expert comparisons 训练通用 T2I human preference reward model，可用于自动评估和 ReFL 优化。</td><td>把 T2I 评估推进到 reward learning。</td></tr>
+<tr><td>2023</td><td><a href="https://arxiv.org/abs/2305.01569">Pick-a-Pic / PickScore</a></td><td>user preference dataset / scorer</td><td>Pick-a-Pic 收集真实用户对 T2I 输出的偏好，训练 PickScore，用于预测人类偏好和评估模型。</td><td>偏好数据规模大，适合 reward/preference learning。</td></tr>
+<tr><td>2024</td><td><a href="https://arxiv.org/abs/2404.01291">VQAScore</a></td><td>VQA-based alignment score</td><td>VQAScore 将文本对齐转化为 “Does this figure show {text}?” 的 VQA yes-probability，缓解 CLIP bag-of-words 问题。</td><td>简单、通用，可跨多个 image-text alignment benchmark 使用。</td></tr>
+<tr><td>2024+</td><td><a href="#">DPG-Bench</a></td><td>dense prompt / complex prompt benchmark</td><td>DPG-Bench 代表更复杂、更长 prompt 的 T2I 评估方向，关注模型对 dense prompt 中多对象、属性和关系的遵循。</td><td>适合观察现代模型在长指令和复杂组合下的 prompt following。</td></tr>
+<tr><td>2024+</td><td><a href="#">DOCCI / RealQA / AIGC-IQA</a></td><td>描述质量 / 真实图像质量补充集</td><td>这类数据更偏图文描述、真实图像质量或 AIGC 图像质量评价，可为 T2I eval 中的 caption fidelity、quality/aesthetics 维度提供补充。</td><td>不一定是专门的 T2I benchmark，但可作为 quality/fidelity 评估资源。</td></tr></tbody>
+  </table>
+
+  <h2>4. 评测方法分类</h2>
+  <table>
+    <thead><tr><th>方法家族</th><th>典型代表</th><th>优点</th><th>局限</th></tr></thead>
+    <tbody>
+      <tr><td>分布级质量指标</td><td>FID、IS</td><td>便宜，适合整体图像分布质量比较</td><td>不能判断单张图是否符合 prompt；对复杂语义无能为力</td></tr>
+      <tr><td>图文 embedding 相似度</td><td>CLIPScore</td><td>reference-free，容易大规模跑</td><td>bag-of-words 问题明显，难判断关系、数量和属性绑定</td></tr>
+      <tr><td>人工偏好</td><td>DrawBench、PartiPrompts、Pick-a-Pic</td><td>最接近真实用户感受</td><td>成本高，不易频繁评估</td></tr>
+      <tr><td>VQA / QA-based</td><td>TIFA、VQAScore</td><td>可解释，能拆成对象、属性、关系问题</td><td>依赖问题生成和 VQA 模型可靠性</td></tr>
+      <tr><td>Detection-based</td><td>GenEval、T2I-CompBench</td><td>适合对象出现、数量、位置、颜色等可检测属性</td><td>受 detector 类别范围和检测精度限制</td></tr>
+      <tr><td>Reward / preference model</td><td>ImageReward、PickScore</td><td>可直接用于排序、筛选和优化模型</td><td>容易学习偏好偏置，需防 reward hacking</td></tr>
+      <tr><td>MLLM judge</td><td>GPT-4V/GPT-4o、Qwen-VL 等</td><td>通用、能读复杂 prompt 与图像</td><td>成本高，prompt 和模型版本影响稳定性</td></tr>
+    </tbody>
+  </table>
+
+  <h2>5. 文生图评估 vs 图像编辑评估</h2>
+  <table>
+    <thead><tr><th>维度</th><th>文生图评估</th><th>图像编辑评估</th></tr></thead>
+    <tbody>
+      <tr><td>输入</td><td>text prompt</td><td>source image + edit instruction</td></tr>
+      <tr><td>输出</td><td>generated image</td><td>edited image</td></tr>
+      <tr><td>核心问题</td><td>生成图是否符合 prompt，且质量好</td><td>是否按指令修改，同时保持原图无关内容</td></tr>
+      <tr><td>图文一致性</td><td>核心指标</td><td>仍重要，但不够</td></tr>
+      <tr><td>图像质量</td><td>核心指标</td><td>仍重要</td></tr>
+      <tr><td>原图保持</td><td>通常没有 source image，因此不是核心问题</td><td>核心指标：identity、background、layout、structure preservation</td></tr>
+      <tr><td>编辑区域定位</td><td>通常没有</td><td>关键：该改区域要改，不该改区域不能变</td></tr>
+      <tr><td>两图一致性</td><td>通常无法评 before-after consistency</td><td>核心问题之一</td></tr>
+      <tr><td>常见错误</td><td>object missing、attribute binding、counting、spatial relation wrong</td><td>under-edit、over-edit、identity drift、background drift、wrong-region edit</td></tr>
+      <tr><td>典型 benchmark</td><td>DrawBench、PartiPrompts、TIFA、GenEval、T2I-CompBench、DPG-Bench</td><td>MagicBrush、EditVal、TIEdit、LMM4Edit、GIE-Bench、EditScore、MotionEdit</td></tr>
+    </tbody>
+  </table>
+
+  <h2>6. 对图像编辑 reward 设计的启发</h2>
+  <p>文生图 reward 通常可以写成：</p>
+  <blockquote><code>R_T2I = w_align * R_text_image_alignment + w_quality * R_image_quality + w_pref * R_human_preference</code></blockquote>
+  <p>但图像编辑至少需要：</p>
+  <blockquote><code>R_Edit = w_inst * R_instruction_alignment + w_target * R_target_modification + w_preserve * R_source_preservation + w_quality * R_visual_quality + w_task * R_task_specific_consistency</code></blockquote>
+  <div class="note ok">
+    <strong>关键区别：</strong>TIFA / GenEval / T2I-CompBench 这类 T2I 指标可以迁移到 image editing 的 instruction alignment 和 output quality 部分，但不能单独解决 source preservation 和 before-after consistency。因此 image edit eval 不能只用 CLIPScore、TIFA 或 GenEval；必须加入 source-aware / region-aware / task-specific consistency reward。
+  </div>
+
+  <h2>7. 本地已下载相关数据</h2>
+  <ul>
+    <li><code>T2I-CompBench</code>：已补齐 examples/dataset prompt 文件。</li>
+    <li><code>GenEval-t2i</code>：正确的 T2I GenEval repo 已下载；另有一个早先误下的 coding benchmark 目录需区分。</li>
+    <li><code>TIFA</code>：已下载 tifa_v1.0 text inputs / QA 文件与 human annotations。</li>
+    <li><code>PartiPrompts</code>：已下载 TSV。</li>
+    <li><code>DrawBench</code>、<code>DPG-Bench</code>、<code>DOCCI</code>、<code>RealQA</code>：本地已有相关目录，可作为补充评测资源。</li>
+  </ul>
+</body>
+</html>

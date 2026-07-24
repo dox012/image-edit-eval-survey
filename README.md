@@ -10,6 +10,7 @@ A compact HTML survey collection for image editing evaluation, benchmarks, metri
 - [Reward design review](docs/image_editing_reward_design_review.html)
 - [MotionEdit summary](docs/motionedit_summary.html)
 - [Paper notes](papers/index.html)
+- [Text-to-Image Evaluation Survey](papers/t2i-eval-survey.html)
 
 ## Focus
 
@@ -29,3 +30,5 @@ The notes cover instruction-based / text-guided image editing evaluation, includ
 - [AugCLIP](papers/augclip.html)
 - [GIE-Bench](papers/gie-bench.html)
 - [MotionEdit](papers/motionedit.html)
+
+- [Text-to-Image Evaluation Survey](papers/t2i-eval-survey.html)
