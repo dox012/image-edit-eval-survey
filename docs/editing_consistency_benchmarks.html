@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>图像编辑前后一致性：全文核对版</title>
+  <style>
+    :root { --fg:#111; --muted:#555; --bg:#fff; --line:#d0d7de; --soft:#f6f8fa; --accent:#0969da; }
+    body { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; line-height: 1.6; margin: 28px auto; max-width: 1180px; padding: 0 18px; color: var(--fg); background: var(--bg); }
+    h1,h2,h3 { line-height: 1.2; }
+    .meta { color: var(--muted); margin: 6px 0 18px; }
+    .note { background: var(--soft); border-left: 4px solid var(--line); padding: 12px 14px; margin: 16px 0; }
+    .warn { border-left-color: #d4a72c; background: #fff8c5; }
+    .ok { border-left-color: #2da44e; background: #dafbe1; }
+    table { border-collapse: collapse; width: 100%; margin: 14px 0 24px; font-size: 14px; }
+    th, td { border: 1px solid var(--line); padding: 8px 10px; vertical-align: top; }
+    th { background: var(--soft); text-align: left; }
+    code { background: var(--soft); padding: 0.1rem 0.3rem; border-radius: 4px; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul { margin-top: 0.25rem; }
+    .small { font-size: 13px; color: var(--muted); }
+    blockquote { margin: 8px 0; padding: 8px 12px; border-left: 4px solid var(--line); background: var(--soft); }
+    .page { color: var(--muted); font-size: 12px; margin-top: -6px; }
+    .tag { display:inline-block; padding:2px 8px; border:1px solid var(--line); border-radius:999px; margin-right:6px; font-size:12px; color:#333; background:#fff; }
+  </style>
+</head>
+<body>
+  <h1>图像编辑前后“一致性”论文与 Benchmark 核实整理</h1>
+  <div class="meta">版本：MotionEdit 全文核对后修订版。<br/>核对范围：已下载并转写的 arXiv 原文全文，不再只依赖摘要。<br/>核心区分：<b>图文一致性</b> vs <b>编辑前后两图的一致性 / preservation / locality / identity</b>。</div>
+
+  <div class="note warn">
+    <strong>说明：</strong>下面所有关于 MotionEdit 的结论都以全文为准。若之前基于摘要表述过宽或不精确，这一版以全文核对结果修正。
+  </div>
+
+  <h2>一、全文核对后的结论</h2>
+  <ul>
+    <li><b>MotionEdit 不是单纯评图文一致性</b>，而是把“编辑前后两图的一致性”写进任务定义和评测设计里。</li>
+    <li>它的目标不是“只看文本有没有对上”，而是要同时满足：<b>motion change</b>、<b>preservation of non-edited factors</b>、<b>identity / structure / physical plausibility</b>。</li>
+    <li>它的评测不靠 DINOv2 / LPIPS 这类通用保真指标，而是采用：
+      <ul>
+        <li><b>generative metrics</b>：Fidelity / Preservation / Coherence / Overall</li>
+        <li><b>discriminative metric</b>：基于 optical flow 的 MAS</li>
+        <li><b>preference-based metric</b>：pairwise win rate</li>
+      </ul>
+    </li>
+    <li>训练侧的 reward 也不是单一 VLM reward，而是 <b>optical-flow motion reward + MLLM reward</b> 的组合。</li>
+  </ul>
+
+  <h2>二、MotionEdit 全文核实到的关键条目</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>项目</th>
+        <th>定位</th>
+        <th>全文核实到的评法</th>
+        <th>原文依据</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a href="https://arxiv.org/abs/2512.10284v2">MotionEdit</a></td>
+        <td>数据集 + benchmark + post-training</td>
+        <td>定义 motion-centric image editing，并要求非编辑因素保持一致；benchmark 用 generative / discriminative / preference-based metrics。</td>
+        <td><blockquote>“the goal is to synthesize an edited image where: (1) the edited motion faithfully reflects the intended action; (2) the resulting pose or interaction is physically plausible and respects articulated constraints; (3) non-edited factors like appearance, background, and viewpoint remains consistent.”</blockquote><blockquote>“MotionEdit-Bench ... measures model performance with generative, discriminative, and preference-based metrics.”</blockquote></td>
+      </tr>
+      <tr>
+        <td><a href="https://arxiv.org/abs/2512.10284v2">MotionEdit generative metric</a></td>
+        <td>评测维度</td>
+        <td>用 MLLM 评 <code>Fidelity</code>、<code>Preservation</code>、<code>Coherence</code> 和 <code>Overall</code>。</td>
+        <td><blockquote>“For generative evaluation, we adopt Multimodal Large Language Model (MLLM)-based metrics to assess the fidelity, preservation, coherence, and overall quality of edited images.”</blockquote></td>
+      </tr>
+      <tr>
+        <td><a href="https://arxiv.org/abs/2512.10284v2">MotionEdit discriminative metric</a></td>
+        <td>评测维度</td>
+        <td>用 optical flow 比较 input→edited 与 input→ground truth 的 motion 差异，形成 MAS。</td>
+        <td><blockquote>“For discriminative evaluation, we by comparing the optical flow ... between the input and model-edited images against the input–ground truth flow.”</blockquote><blockquote>“we introduce an optical flow–based Motion Alignment Score (MAS) to measure how well the model understands and performs the correct motion change in images.”</blockquote></td>
+      </tr>
+      <tr>
+        <td><a href="https://arxiv.org/abs/2512.10284v2">MotionNFT</a></td>
+        <td>训练方法</td>
+        <td>reward = optical-flow motion reward；包含 motion magnitude consistency / motion direction consistency / movement regularization。</td>
+        <td><blockquote>“our reward function must quantify the alignment between model-predicted motion and the ground-truth motion edit.”</blockquote><blockquote>“We aggregate the 3 terms to obtain ...”</blockquote></td>
+      </tr>
+      <tr>
+        <td><a href="https://arxiv.org/abs/2512.10284v2">MotionNFT + MLLM</a></td>
+        <td>训练配方</td>
+        <td>最终训练使用 50% motion reward + 50% MLLM reward。</td>
+        <td><blockquote>“we employ a multi-score reward formulation with a weighted combination of (i) 50% our optical flow-based Motion Reward and (ii) 50% MLLM reward proposed by Lin et al. [15].”</blockquote></td>
+      </tr>
+      <tr>
+        <td><a href="https://arxiv.org/abs/2512.10284v2">Human evaluation</a></td>
+        <td>人工评测</td>
+        <td>人工比较时要求看 motion edit 是否正确，同时保留 subject identity 和 overall visual coherence。</td>
+        <td><blockquote>“the two model outputs better fulfill the requested motion edit, preserve the subject’s identity, and maintain overall visual coherence.”</blockquote></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>三、MotionEdit 的“编辑前后两图一致性”到底怎么做</h2>
+  <p>全文里，MotionEdit 的一致性不是“算原图和结果图越像越好”，而是“<b>该动的动，不该动的尽量不动</b>”。它明确把 consistency 拆成以下几类：</p>
+  <ul>
+    <li><b>non-edited factors consistency</b>：appearance / background / viewpoint 保持一致</li>
+    <li><b>identity preservation</b>：主体身份保持</li>
+    <li><b>structure / geometric consistency</b>：姿态、结构、几何对齐正确</li>
+    <li><b>physical plausibility</b>：动作在物理上合理</li>
+  </ul>
+  <p>换句话说，它评的不是“图文一致性 alone”，而是“<b>motion change + preservation</b>”的联合目标。</p>
+
+  <h2>四、全文核实后，对原表中 MotionEdit 相关条目的修订</h2>
+  <ul>
+    <li>原先如果把 MotionEdit 仅写成“评图文一致性”是不准确的；应改成“<b>明确评 motion edit 的两图一致性 / preservation / identity / structure</b>”。</li>
+    <li>原先如果写“它用 DINOv2/LPIPS 做 preservation reward”是不对的；全文没有这个做法。它的 reward 是 <b>optical-flow-based motion reward</b>。</li>
+    <li>原先如果说“它只看 benchmark 总分”也不完整；它同时有 <b>generative</b>、<b>discriminative</b>、<b>preference-based</b> 三类评测。</li>
+  </ul>
+
+  <h2>五、与用户问题最相关的原文句子摘录</h2>
+  <p>下面是我从全文里单独摘出的、最直接相关的句子。</p>
+
+  <h3>1) 任务定义：两图一致性 / preservation</h3>
+  <blockquote>
+    “the goal is to synthesize an edited image where: (1) the edited motion faithfully reflects the intended action; (2) the resulting pose or interaction is physically plausible and respects articulated constraints; (3) non-edited factors like appearance, background, and viewpoint remains consistent.”
+  </blockquote>
+  <div class="page">对应正文：Page 4</div>
+
+  <h3>2) Benchmark 评法：三类指标</h3>
+  <blockquote>
+    “MotionEdit-Bench ... measures model performance with generative, discriminative, and preference-based metrics.”
+  </blockquote>
+  <div class="page">对应摘要页：Page 1 / Page 2 引言部分</div>
+
+  <h3>3) Generative metric：preservation 被显式评估</h3>
+  <blockquote>
+    “For generative evaluation, we adopt Multimodal Large Language Model (MLLM)-based metrics to assess the fidelity, preservation, coherence, and overall quality of edited images.”
+  </blockquote>
+  <div class="page">对应正文：Page 7</div>
+
+  <h3>4) Discriminative metric：基于 optical flow 的 MAS</h3>
+  <blockquote>
+    “we introduce an optical flow–based Motion Alignment Score (MAS) to measure how well the model understands and performs the correct motion change in images.”
+  </blockquote>
+  <div class="page">对应正文：Page 7</div>
+
+  <h3>5) MotionNFT reward：不是 VLM 单独打分，而是 flow 对齐</h3>
+  <blockquote>
+    “our reward function must quantify the alignment between model-predicted motion and the ground-truth motion edit.”
+  </blockquote>
+  <blockquote>
+    “We aggregate the 3 terms to obtain a composite distance ...”
+  </blockquote>
+  <div class="page">对应正文：Page 6 / Supplement Page 13</div>
+
+  <h3>6) 最终训练：motion reward + MLLM reward</h3>
+  <blockquote>
+    “we employ a multi-score reward formulation with a weighted combination of (i) 50% our optical flow-based Motion Reward and (ii) 50% MLLM reward proposed by Lin et al. [15].”
+  </blockquote>
+  <div class="page">对应正文：Page 7</div>
+
+  <h3>7) 人工评测：保身份、保一致性</h3>
+  <blockquote>
+    “better fulfill the requested motion edit, preserve the subject’s identity, and maintain overall visual coherence.”
+  </blockquote>
+  <div class="page">对应补充材料：Page 14</div>
+
+  <h3>8) Failure analysis：他们自己也把 identity preservation 当作难点</h3>
+  <blockquote>
+    “Identity Preservation Existing models still struggle to preserve subjects and their identities in complex scenes.”
+  </blockquote>
+  <div class="page">对应补充材料：Page 16</div>
+
+  <h2>六、和图文一致性的关系，全文核实后更准确的说法</h2>
+  <ul>
+    <li><b>图文一致性</b>：主要看编辑结果有没有按 instruction 改对。</li>
+    <li><b>MotionEdit 的两图一致性</b>：不仅看改对没有，还看原图里不该动的 appearance / background / viewpoint / identity 有没有保住。</li>
+    <li>MotionEdit 的实现方式不是把两图一致性降成简单像素距离，而是用 <b>optical flow</b> 去衡量 motion 变化是否和 ground truth 一致。</li>
+  </ul>
+
+  <div class="note ok">
+    <strong>一句话总结：</strong>MotionEdit 这篇论文的核心不是“图文一致性评测”，而是“motion editing 下的编辑前后两图一致性 + preservation + identity/structure consistency”，并且它把这件事真正落实到 benchmark、human eval 和 reward 里了。
+  </div>
+
+  <h2>七、参考链接</h2>
+  <ul>
+    <li><a href="https://arxiv.org/abs/2512.10284v2">MotionEdit: Benchmarking and Learning Motion-Centric Image Editing</a></li>
+    <li><a href="https://arxiv.org/abs/2310.02426v1">EditVal: Benchmarking Diffusion Based Text-Guided Image Editing Methods</a></li>
+    <li><a href="https://arxiv.org/abs/2505.20275v1">ImgEdit: A Unified Image Editing Dataset and Benchmark</a></li>
+    <li><a href="https://arxiv.org/abs/2507.16193v2">LMM4Edit: Benchmarking and Evaluating Multimodal Image Editing with LMMs</a></li>
+    <li><a href="https://arxiv.org/abs/2603.19775v2">Evaluating Image Editing with LLMs: A Comprehensive Benchmark and Intermediate-Layer Probing Approach</a></li>
+    <li><a href="https://arxiv.org/abs/2603.28547v1">GEditBench v2: A Human-Aligned Benchmark for General Image Editing</a></li>
+    <li><a href="https://arxiv.org/abs/2506.13827v1">Balancing Preservation and Modification: A Region and Semantic Aware Metric for Instruction-Based Image Editing</a></li>
+    <li><a href="https://arxiv.org/abs/2311.10089v1">Emu Edit: Precise Image Editing via Recognition and Generation Tasks</a></li>
+    <li><a href="https://arxiv.org/abs/2404.09990v1">HQ-Edit: A High-Quality Dataset for Instruction-based Image Editing</a></li>
+    <li><a href="https://arxiv.org/abs/2407.05282v2">UltraEdit: Instruction-based Fine-Grained Image Editing at Scale</a></li>
+    <li><a href="https://arxiv.org/abs/2306.10012v3">MagicBrush: A Manually Annotated Dataset for Instruction-Guided Image Editing</a></li>
+  </ul>
+
+  <div class="small">如果你要，我下一步可以继续把这份 HTML 再拆成：左栏“图文一致性”，右栏“编辑前后两图一致性”，并给每篇加上“适合训练 reward / 只适合评估 / 二者都适合”的标签。</div>
+</body>
+</html>

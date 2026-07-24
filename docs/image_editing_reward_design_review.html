@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>图像编辑评分论文精读：一致性 Reward 设计</title>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;line-height:1.62;margin:28px auto;max-width:1280px;padding:0 18px;color:#111}h1,h2,h3{line-height:1.24}.meta,.small{color:#555}.note{background:#f6f8fa;border-left:4px solid #d0d7de;padding:12px 14px;margin:16px 0}.warn{background:#fff8c5;border-left-color:#d4a72c}.ok{background:#dafbe1;border-left-color:#2da44e}table{border-collapse:collapse;width:100%;margin:14px 0 28px;font-size:14px}th,td{border:1px solid #d0d7de;padding:8px 10px;vertical-align:top}th{background:#f6f8fa;text-align:left}blockquote{margin:8px 0;padding:8px 12px;border-left:4px solid #d0d7de;background:#f6f8fa}code{background:#f6f8fa;padding:.1rem .3rem;border-radius:4px}.tag{display:inline-block;padding:2px 7px;margin:2px 3px 2px 0;border:1px solid #d0d7de;border-radius:999px;font-size:12px;background:#fff}a{color:#0969da;text-decoration:none}a:hover{text-decoration:underline}.formula{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#f6f8fa;padding:10px;border-radius:6px;white-space:pre-wrap}
+  </style>
+</head>
+<body>
+<h1>图像编辑评分论文精读：如何设计“编辑前后一致性 Reward”</h1>
+<div class="meta">目标论文：TIEdit、LMM4Edit、Human-Aligned MLLM Judges、EditScore/EditReward-Bench、BPM、AugCLIP、GIE-Bench、MotionEdit。<br>方法：优先读取 ar5iv 全文；MotionEdit 另有 PDF 全文抽取。本文只写已核实到的原文和对应方法理解。</div>
+
+<div class="note ok"><b>核心结论：</b>通用的图像编辑一致性 reward 不应该只用 optical flow、LPIPS 或 VLM 单项分数。更稳的设计是：<b>图文/指令完成度 + 编辑区域修改质量 + 非编辑区域保持 + 感知质量 + 任务专用一致性</b> 的组合。</div>
+
+<h2>一、论文逐篇精读摘要</h2>
+<table>
+<thead><tr><th>论文</th><th>它怎么评</th><th>和一致性 reward 的关系</th><th>原文依据</th></tr></thead>
+<tbody>
+<tr>
+<td><a href="https://arxiv.org/abs/2603.19775v2">TIEdit / Evaluating Image Editing with LLMs</a></td>
+<td>构建 TIEdit：512 source images × prompts，10 个 TIE 模型生成 5120 edited images；20 位专家给 307,200 raw ratings，形成 15,360 MOS。评分三维：<b>perceptual quality、editing alignment、content preservation</b>。另提出 EditProbe，用 LLM/MLLM 中间层表示做回归预测多维质量分。</td>
+<td>它给出最清晰的三维 reward 框架：质量、文本对齐、原图保持。适合用作 reward model 标注维度或训练数据 schema。</td>
+<td><blockquote>“reliable assessment should simultaneously consider perceptual quality, alignment with textual instructions, and preservation of original image content.”</blockquote><blockquote>“15,360 mean opinion scores (MOSs) across three evaluation dimensions: perceptual quality, editing alignment, and content preservation.”</blockquote><blockquote>“lightweight regression heads are trained to predict multi-dimensional editing quality scores aligned with human judgments.”</blockquote></td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2507.16193v2">LMM4Edit / EBench-18K</a></td>
+<td>构建 EBench-18K：1080 source images、21 tasks、18K+ edited images、17 个模型、55K+ MOS、18K+ QA pairs。提出 LMM4Edit，一体化评估 <b>perceptual quality、editing alignment、attribute preservation、task-specific QA accuracy</b>。</td>
+<td>相比 TIEdit，LMM4Edit 多了 task-specific QA。它说明：一致性 reward 不只要主观 MOS，还可转成可验证问答，例如“未编辑区域/属性是否保持”。</td>
+<td><blockquote>“EBench-18K includes 1,080 source images with corresponding editing prompts across 21 tasks, 18K+ edited images produced by 17 state-of-the-art TIE models, 55K+ mean opinion scores (MOSs) ... and 18K+ question-answering (QA) pairs.”</blockquote><blockquote>“LMM4Edit, a LMM-based metric for evaluating image Editing models from perceptual quality, editing alignment, attribute preservation, and task-specific QA accuracy in an all-in-one manner.”</blockquote></td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2602.13028v1">Human-Aligned MLLM Judges</a></td>
+<td>把图像编辑评价拆成 12 个细粒度、可解释因素，覆盖 <b>image preservation、edit quality、instruction fidelity</b>；用人类研究验证 MLLM judge 与人类细粒度评价一致性。</td>
+<td>它对 reward 设计最有启发：不要只输出一个总分，而是让 judge 按可解释因子分别打分，再聚合。这样能定位到底是 over-edit、没改对、还是质量差。</td>
+<td><blockquote>“decomposes common evaluation notions into twelve fine-grained interpretable factors spanning image preservation, edit quality, and instruction fidelity.”</blockquote><blockquote>“traditional image editing metrics are often poor proxies for these factors, failing to distinguish over-edited or semantically imprecise outputs...”</blockquote><blockquote>“Human scores or preference signals can be used to train reward models or support preference-based learning...”</blockquote></td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2509.23909v3">EditScore / EditReward-Bench</a></td>
+<td>专门做 image editing reward model。EditReward-Bench 用于系统评估 reward models；EditScore 输入 <b>Instruction, Input Image, Output Image</b>，输出 <b>Reasoning, Scalar Score</b>。采用 VIEScore 思路并行评估两个维度：Semantic Consistency 和 Perceptual Quality；最终分数为几何平均。</td>
+<td>这是最接近实际 RL reward 的论文。关键做法：reward model 不是只看输出图，而是三元组输入；输出推理和标量；用 SC×PQ 平衡“改对”和“质量”。</td>
+<td><blockquote>“Instruction-guided image editing ... adoption in image editing has been severely hindered by the lack of a high-fidelity, efficient reward signal.”</blockquote><blockquote>“EditScore takes (Instruction, Input Image, Output Image) as input, (Reasoning, Scalar Score) as output.”</blockquote><blockquote>“Semantic Consistency (SC), which evaluates the degree of instruction following and consistency, ensuring specified objects are correctly modified while unmentioned regions remain preserved.”</blockquote><blockquote>“Perceptual Quality (PQ), which assesses overall image quality, focusing on photorealism and the absence of artifacts. The final score is the geometric mean...”</blockquote></td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2506.13827v1">BPM / Balancing Preservation and Modification</a></td>
+<td>提出 BPM：先识别 editing-relevant regions，再两层评估：<b>Region-Aware Judge</b> 判断编辑区域位置/大小是否符合指令；<b>Semantic-Aware Judge</b> 判断编辑区域是否完成指令，以及 irrelevant regions 是否保持。内部有 S_modify 和 S_preserve。</td>
+<td>这是解决“preservation reward 难给”的直接方案：先定位该改哪里，再分别对目标区域算修改分、非目标区域算保持分。比全图 LPIPS/CLIP 更合理。</td>
+<td><blockquote>“modify the image faithfully towards instruction while preserving irrelevant content unchanged”</blockquote><blockquote>“explicitly disentangling the image into editing-relevant and irrelevant regions for specific consideration.”</blockquote><blockquote>“Region-Aware Judge evaluates whether the position and size of the edited region align with instruction, and Semantic-Aware Judge further assesses the instruction content compliance within editing-relevant regions as well as content preservation within irrelevant regions...”</blockquote></td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2410.11374v3">Preserve or Modify? / AugCLIP</a></td>
+<td>指出现有指标存在 context-blindness：CLIPScore 偏 modification，FID/IS/LPIPS 等偏 preservation 或不关注修改质量。AugCLIP 用 MLLM 扩展 source/target 文本描述，在 CLIP 空间估计“理想编辑图”的表示，平衡 preserve/modify。</td>
+<td>它回答“为什么不能只用 CLIP/LPIPS”：因为单一指标会偏向修改或保持。reward 需要根据具体 instruction 自适应决定 preserve 和 modify 的权重。</td>
+<td><blockquote>“existing metrics have a context-blindness problem... biasing towards either modification or preservation.”</blockquote><blockquote>“CLIPScore ... tends to favor modification and ignore core attributes to be preserved”</blockquote><blockquote>“AugCLIP ... balances preservation and modification by estimating the representation of an ideal edited image that aligns with the target text with minimum alteration on the source image.”</blockquote><blockquote>“FID, IS, and LPIPS measure feature distance... However, these metrics tend to focus primarily on the preservation of the source image rather than assessing the quality of the modifications.”</blockquote></td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2505.11493v3">GIE-Bench</a></td>
+<td>提出 grounded evaluation，两维：<b>functional correctness</b> 通过自动生成多选 VQA 判断目标改动是否完成；<b>image content preservation</b> 用 object-aware mask + preservation score 确保非目标区域视觉一致。保留分用 masked aligned MSE：先用 SIFT/FLANN/affine 对齐，再算非 mask 区域 MSE，归一化到 [0,1]。</td>
+<td>非常适合落地：把“改对了吗”转成 VQA，把“别乱改”转成 mask 外一致性。它比纯 VLM 总分更可控、可解释。</td>
+<td><blockquote>“functional correctness, assessed via automatically generated multiple-choice questions that verify whether the intended change was successfully applied”</blockquote><blockquote>“image content preservation, which ensures that non-targeted regions of the image remain visually consistent using an object-aware masking technique and preservation scoring.”</blockquote><blockquote>“we compute the mean squared error between the original and edited images over unmasked regions, that is, regions that should remain unchanged, after applying geometric alignment.”</blockquote></td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2512.10284v2">MotionEdit</a></td>
+<td>针对 motion-centric editing。评估三类：MLLM generative metrics（Fidelity/Preservation/Coherence/Overall）、optical-flow MAS、pairwise win rate。训练 MotionNFT 用 optical flow 比较 input→edited 与 input→GT motion，构造 motion reward，并与 MLLM reward 50/50 组合。</td>
+<td>它不是通用一致性 reward，而是任务专用 reward 的好例子：当编辑目标是动作/姿态/位移时，optical flow 可以作为 discriminative consistency；但普通属性/风格/增删编辑不适用。</td>
+<td><blockquote>“For discriminative evaluation, we ... comparing the optical flow ... between the input and model-edited images against the input–ground truth flow.”</blockquote><blockquote>“MLLM-based metrics to assess the fidelity, preservation, coherence, and overall quality of edited images.”</blockquote><blockquote>“our reward function must quantify the alignment between model-predicted motion and the ground-truth motion edit.”</blockquote><blockquote>“50% our optical flow-based Motion Reward and ... 50% MLLM reward...”</blockquote></td>
+</tr>
+</tbody>
+</table>
+
+<h2>二、这些方法对“一致性 reward”设计的共同启发</h2>
+<div class="formula">推荐 reward 总体形式：
+R_total = w_inst * R_instruction
+        + w_edit * R_target_edit
+        + w_preserve * R_non_target_preservation
+        + w_quality * R_visual_quality
+        + w_task * R_task_specific
+
+其中：
+- R_instruction：是否理解并遵循编辑指令
+- R_target_edit：目标区域/目标属性是否改对
+- R_non_target_preservation：非目标区域、主体身份、背景、布局是否保持
+- R_visual_quality：真实感、伪影、清晰度
+- R_task_specific：人脸/商品/文档/动作等任务专用一致性</div>
+
+<h3>1) 不要用一个“全图相似度”解决 preservation</h3>
+<p>BPM、GIE-Bench、AugCLIP 都指出，全图相似度会混淆“应该改的变化”和“不应该改的变化”。更好的做法是先区分编辑相关区域和无关区域。</p>
+<ul>
+  <li>有 mask：直接在 mask 内算修改分，mask 外算保持分。</li>
+  <li>无 mask：用 grounding / segmentation / VLM 先估计编辑区域。</li>
+  <li>非目标区域可以用 aligned MSE、LPIPS、DINO feature、CLIP image feature、或 VLM judge。</li>
+</ul>
+
+<h3>2) VLM 适合做语义 judge，但最好拆维度</h3>
+<p>TIEdit、LMM4Edit、Human-Aligned MLLM Judges 都显示：VLM/MLLM 可以评，但不要只问“给总分”。最好拆成：</p>
+<ul>
+  <li>Instruction / editing alignment</li>
+  <li>Attribute / content preservation</li>
+  <li>Perceptual quality</li>
+  <li>Task-specific QA accuracy</li>
+  <li>Localization / over-edit / under-edit</li>
+</ul>
+
+<h3>3) Reward model 应该吃三元组，而不是只吃输出图</h3>
+<p>EditScore 的设计很关键：输入是 <code>(Instruction, Input Image, Output Image)</code>。这正好对应图像编辑 reward 的核心：既要知道用户要求，也要知道原图，才能判断编辑图是否“改对且没改坏”。</p>
+
+<h3>4) 通用 reward + 任务专用 reward 组合</h3>
+<p>MotionEdit 说明：任务专用 reward 可以很有效，但不通用。Optical flow 对运动编辑有效；人脸要用 ArcFace/InsightFace；文档要 OCR/layout；商品要 logo/OCR/product embedding；姿态要 pose estimator。</p>
+<table>
+<thead><tr><th>任务</th><th>任务专用一致性 reward</th><th>通用项</th></tr></thead>
+<tbody>
+<tr><td>普通局部编辑</td><td>mask 外 preservation、object-aware consistency</td><td>VLM instruction + quality</td></tr>
+<tr><td>人脸编辑</td><td>ArcFace/InsightFace 身份相似度</td><td>VLM + LPIPS/DINO + quality</td></tr>
+<tr><td>商品图编辑</td><td>product embedding、OCR、logo consistency</td><td>VLM + background preservation</td></tr>
+<tr><td>文档/海报编辑</td><td>OCR、layout similarity、font/style consistency</td><td>VLM + visual quality</td></tr>
+<tr><td>动作/姿态编辑</td><td>optical flow、pose/keypoint、depth/geometry</td><td>VLM + identity/scene preservation</td></tr>
+</tbody>
+</table>
+
+<h2>三、一个可落地的一致性 Reward 方案</h2>
+<ol>
+  <li><b>先解析指令：</b>用 VLM/LLM 得到目标对象、目标属性、操作类型、应保持对象/属性。</li>
+  <li><b>定位编辑区域：</b>有 mask 用 mask；无 mask 用 GroundingDINO/SAM/OWL-ViT 或 VLM 生成区域。</li>
+  <li><b>目标区域评分：</b>用 VQA/MLLM 判断目标 edit 是否完成；必要时用 CLIP directional similarity 或 task-specific detector。</li>
+  <li><b>非目标区域评分：</b>mask 外 aligned MSE/LPIPS/DINO feature；再用 VLM 检查主体/背景/身份是否保持。</li>
+  <li><b>图像质量评分：</b>VLM quality judge 或 IQA 模型，惩罚 artifact、变形、模糊。</li>
+  <li><b>聚合方式：</b>不要简单平均；建议用几何平均或 gating：若 instruction 完全失败，则 preservation 再高也不能高分；若 preservation 严重失败，总分上限受限。</li>
+</ol>
+<div class="formula">一个更稳的聚合例子：
+R_sem = sqrt(R_instruction * R_target_edit)
+R_pres = min(R_region_preserve, R_identity_preserve, R_background_preserve)
+R_quality = IQA_or_VLM_quality
+R_total = (R_sem^0.45) * (R_pres^0.35) * (R_quality^0.20)
+
+可选：
+- 若 R_instruction < 0.3，则 R_total <= 0.4
+- 若 R_preserve < 0.3，则 R_total <= 0.6
+- 对人脸/商品/文档/动作加入 R_task_specific</div>
+
+<h2>四、应该怎么借鉴这些论文</h2>
+<table>
+<thead><tr><th>需求</th><th>最值得借鉴的论文</th><th>具体借鉴点</th></tr></thead>
+<tbody>
+<tr><td>建立评价维度</td><td>TIEdit、LMM4Edit</td><td>质量 / 编辑对齐 / 原图保持三维；加 QA accuracy。</td></tr>
+<tr><td>做可解释 VLM judge</td><td>Human-Aligned MLLM Judges</td><td>把总分拆成可解释因素，分别 prompt、分别校准。</td></tr>
+<tr><td>训练 reward model</td><td>EditScore</td><td>三元组输入 + reasoning + scalar score；SC/PQ 几何平均；自集成提升稳定性。</td></tr>
+<tr><td>解决 preservation vs modification 冲突</td><td>BPM、AugCLIP、GIE-Bench</td><td>region-aware；自适应 balance；VQA functional correctness + mask 外 preservation。</td></tr>
+<tr><td>做任务专用 reward</td><td>MotionEdit</td><td>对动作类编辑加入 optical-flow MAS/reward；不要泛化到所有编辑。</td></tr>
+</tbody>
+</table>
+
+<h2>五、参考链接</h2>
+<ul>
+<li><a href="https://arxiv.org/abs/2603.19775v2">TIEdit / Evaluating Image Editing with LLMs</a></li>
+<li><a href="https://arxiv.org/abs/2507.16193v2">LMM4Edit</a></li>
+<li><a href="https://arxiv.org/abs/2602.13028v1">Human-Aligned MLLM Judges</a></li>
+<li><a href="https://arxiv.org/abs/2509.23909v3">EditScore / EditReward-Bench</a></li>
+<li><a href="https://arxiv.org/abs/2506.13827v1">BPM / Balancing Preservation and Modification</a></li>
+<li><a href="https://arxiv.org/abs/2410.11374v3">Preserve or Modify? / AugCLIP</a></li>
+<li><a href="https://arxiv.org/abs/2505.11493v3">GIE-Bench</a></li>
+<li><a href="https://arxiv.org/abs/2512.10284v2">MotionEdit</a></li>
+</ul>
+
+<div class="note"><b>本地全文/文本：</b><code>/mnt/vlm-ks3/FoundationModel/dataset/pose_intriduct/composition2/papers_image_editing_eval/</code></div>
+</body>
+</html>

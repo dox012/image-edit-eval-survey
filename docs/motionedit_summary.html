@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MotionEdit 精读摘要</title>
+  <style>
+    body { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; line-height: 1.6; margin: 32px auto; max-width: 980px; padding: 0 18px; color: #111; }
+    h1,h2,h3 { line-height: 1.25; }
+    h1 { margin-bottom: 0.25rem; }
+    .meta { color: #555; margin-bottom: 1.5rem; }
+    .note { background: #f6f8fa; border-left: 4px solid #d0d7de; padding: 12px 14px; margin: 16px 0; }
+    .warn { background: #fff8e5; border-left-color: #e0b100; }
+    ul { margin-top: 0.35rem; }
+    code { background: #f6f8fa; padding: 0.15rem 0.3rem; border-radius: 4px; }
+    table { border-collapse: collapse; width: 100%; margin: 14px 0; }
+    th, td { border: 1px solid #d0d7de; padding: 8px 10px; vertical-align: top; }
+    th { background: #f6f8fa; text-align: left; }
+  </style>
+</head>
+<body>
+  <h1>MotionEdit 精读摘要</h1>
+  <div class="meta">基于可核实的 arXiv 摘要与元数据整理；当前环境无法稳定抽取完整 PDF 正文，因此本文只写“已核实内容”，不补未经确认的细节。</div>
+
+  <div class="note warn">
+    <strong>范围说明：</strong>下面内容只来自论文摘要中可直接核实的信息，重点是它如何把“编辑前后的一致性”纳入评估与训练目标。
+  </div>
+
+  <h2>1. 论文要解决什么问题</h2>
+  <p>MotionEdit 关注的是 <strong>motion-centric image editing</strong>：修改人物动作或交互关系，同时尽量保留 <strong>identity、structure、physical plausibility</strong>。</p>
+  <ul>
+    <li>不是普通的静态外观编辑。</li>
+    <li>目标是“动作变了，但人还是那个人，结构别乱，结果要物理合理”。</li>
+    <li>适合面向视频合成、动画等下游场景。</li>
+  </ul>
+
+  <h2>2. 数据集怎么做</h2>
+  <p>摘要里明确说他们构建了一个新的数据集，来自并验证于连续视频中的高保真图像对：</p>
+  <ul>
+    <li><strong>high-fidelity image pairs</strong></li>
+    <li>从 <strong>continuous videos</strong> 中抽取</li>
+    <li>并经过 <strong>verified</strong> 处理</li>
+    <li>用于表示真实的 motion transformations</li>
+  </ul>
+  <p>这说明它不是只做 prompt-to-image 的文本一致性评测，而是把 <strong>原图—编辑后图</strong> 之间的动作变化和保留关系一起编码进数据。</p>
+
+  <h2>3. MotionEdit-Bench 怎么评</h2>
+  <p>他们还提出了 <strong>MotionEdit-Bench</strong>，用来测模型在 motion-centric edits 上的表现。</p>
+  <p>摘要里能确认的评测维度是：</p>
+  <table>
+    <thead>
+      <tr>
+        <th>维度</th>
+        <th>摘要中的说法</th>
+        <th>含义</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>generative</td>
+        <td>“generative metrics”</td>
+        <td>看生成结果本身是否好</td>
+      </tr>
+      <tr>
+        <td>discriminative</td>
+        <td>“discriminative metrics”</td>
+        <td>看模型是否能区分/满足 motion edit 要求</td>
+      </tr>
+      <tr>
+        <td>preference-based</td>
+        <td>“preference-based metrics”</td>
+        <td>看人类或偏好式判断更喜欢哪个结果</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>这点很关键：它不是只做图文一致性评分，而是把 <strong>motion fidelity</strong> 和 <strong>preservation</strong> 也纳入评估框架。</p>
+
+  <h2>4. 论文里明确强调的一致性问题</h2>
+  <p>摘要中最直接的句子是：</p>
+  <blockquote>
+    “modifying subject actions and interactions while preserving identity, structure, and physical plausibility.”
+  </blockquote>
+  <p>这就是你问的“两张图之间一致性”问题的核心：<strong>该变的变，不该变的保持住</strong>。</p>
+
+  <h2>5. 训练方法 MotionNFT 做了什么</h2>
+  <p>论文还提出了 <strong>MotionNFT (Motion-guided Negative-aware Fine Tuning)</strong>。摘要里能核实的做法是：</p>
+  <ul>
+    <li>它是一个 <strong>post-training framework</strong></li>
+    <li>会计算 <strong>motion alignment rewards</strong></li>
+    <li>reward 的依据是：<strong>input image</strong> 和 <strong>model-edited image</strong> 之间的 motion flow</li>
+    <li>把这个 motion flow 和 ground-truth motion 做匹配</li>
+    <li>据此引导模型学到更准确的 motion transformation</li>
+  </ul>
+
+  <h2>6. 用在哪些模型上</h2>
+  <p>摘要明确说他们在以下模型上做了实验：</p>
+  <ul>
+    <li><code>FLUX.1 Kontext</code></li>
+    <li><code>Qwen-Image-Edit</code></li>
+  </ul>
+  <p>结果是：<strong>MotionNFT</strong> 能稳定提升 motion editing 质量和 motion fidelity，并且<strong>不牺牲 general editing ability</strong>。</p>
+
+  <h2>7. 这篇论文对你关心问题的结论</h2>
+  <p>如果把它映射回你的问题：</p>
+  <ul>
+    <li>它不是只评 <strong>图文一致性</strong>。</li>
+    <li>它明确把 <strong>编辑前后图像的一致性/保真</strong> 写进任务目标。</li>
+    <li>而且这种一致性不是泛泛地说“别变坏”，而是具体到 <strong>identity</strong>、<strong>structure</strong>、<strong>physical plausibility</strong>。</li>
+  </ul>
+
+  <h2>8. 一句话总结</h2>
+  <p><strong>MotionEdit</strong> 可以理解为一篇把“图像编辑”从单纯的文本对齐，推进到“动作编辑 + 保留原图身份/结构/物理合理性”的工作。</p>
+
+  <div class="note">
+    <strong>来源：</strong>
+    <a href="https://arxiv.org/abs/2512.10284v2">MotionEdit: Benchmarking and Learning Motion-Centric Image Editing</a>
+  </div>
+</body>
+</html>

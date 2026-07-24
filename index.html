@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Image Edit Eval Survey</title>
+  <style>
+    :root { --fg:#111; --muted:#555; --bg:#fff; --line:#d0d7de; --soft:#f6f8fa; --accent:#0969da; }
+    body { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; line-height: 1.65; margin: 28px auto; max-width: 1280px; padding: 0 18px; color: var(--fg); background: var(--bg); }
+    h1,h2,h3 { line-height: 1.22; }
+    .meta { color: var(--muted); margin: 6px 0 18px; }
+    .note { background: var(--soft); border-left: 4px solid var(--line); padding: 12px 14px; margin: 16px 0; }
+    .warn { border-left-color: #d4a72c; background: #fff8c5; }
+    .ok { border-left-color: #2da44e; background: #dafbe1; }
+    table { width: 100%; border-collapse: collapse; margin: 14px 0 26px; font-size: 14px; }
+    th, td { border: 1px solid var(--line); padding: 8px 10px; vertical-align: top; }
+    th { background: var(--soft); text-align: left; }
+    blockquote { margin: 8px 0; padding: 8px 12px; border-left: 4px solid var(--line); background: var(--soft); }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul { margin-top: 0.25rem; }
+    code { background: var(--soft); padding: 0.1rem 0.3rem; border-radius: 4px; }
+    .tag { display:inline-block; padding:2px 8px; border:1px solid var(--line); border-radius:999px; margin-right:6px; margin-bottom:4px; font-size:12px; background:#fff; }
+    .small { color: var(--muted); font-size: 13px; }
+    .timeline { border-left: 3px solid var(--line); padding-left: 14px; margin: 12px 0 24px; }
+    .timeline-item { margin-bottom: 18px; }
+    .year { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>Image Edit Eval Survey</h1>
+  <div class="meta">聚焦：text-guided / instruction-based image editing 的评估、metric、benchmark、reward modeling。<br/>目标：把“怎么评”和“怎么把评估转成 reward 设计”统一到一份可读的 survey 里。</div>
+
+  <div class="note warn">
+    <strong>说明：</strong>这是一个 survey 草稿型 HTML，不是论文最终版。当前内容基于已核实的公开论文原文/摘要锚点整理，重点放在：问题背景、时间线、评测方法与指标、方法对比、发展趋势、问题与 reward 启发。
+  </div>
+
+  <h2>1. 问题背景</h2>
+  <p>图像编辑的核心不是单纯生成一张“好看”的图，而是同时满足：</p>
+  <ul>
+    <li><strong>instruction following / editing alignment</strong>：按指令改对；</li>
+    <li><strong>preservation</strong>：未要求改的内容别乱变；</li>
+    <li><strong>perceptual quality</strong>：结果自然、无伪影；</li>
+    <li><strong>task-specific consistency</strong>：如身份、结构、版式、动作、商品 logo 等专用一致性。</li>
+  </ul>
+  <p>传统单一指标很难同时覆盖这些目标，因此近年来评估方法开始从 <code>CLIP / LPIPS / SSIM</code> 走向 <code>LLM/MLLM judges</code>、<code>mask-aware metrics</code>、<code>QA-based evaluation</code> 和 <code>reward models</code>。</p>
+
+  <h2>2. 时间线</h2>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="year">2022–2023：早期标准化 benchmark 与 human study</div>
+      <p>这一阶段主要关注如何建立可比较的基准、引入人类评分、以及用 CLIP / VLM 做自动评估。</p>
+      <p>代表：<a href="https://arxiv.org/abs/2212.06909v2">EditBench</a>、<a href="https://arxiv.org/abs/2310.02426v1">EditVal</a>、<a href="https://arxiv.org/abs/2306.10012v3">MagicBrush</a>、<a href="https://arxiv.org/abs/2309.17102v2">MGIE</a>。</p>
+    </div>
+    <div class="timeline-item">
+      <div class="year">2024：开始系统讨论 preservation / modification 平衡</div>
+      <p>这一阶段出现了明确批评：单纯 CLIPScore 偏向 modification，而全图相似度偏向 preservation。</p>
+      <p>代表：<a href="https://arxiv.org/abs/2410.11374v3">AugCLIP</a>、<a href="https://arxiv.org/abs/2506.13827v1">BPM</a>、<a href="https://arxiv.org/abs/2505.11493v3">GIE-Bench</a>。</p>
+    </div>
+    <div class="timeline-item">
+      <div class="year">2025：LLM/MLLM judge、reward model、human-aligned benchmark 成为主流</div>
+      <p>这一阶段的重点是把图像编辑评分做得更细粒度、更人类对齐，并服务于 RL / reward learning。</p>
+      <p>代表：<a href="https://arxiv.org/abs/2603.19775v2">TIEdit</a>、<a href="https://arxiv.org/abs/2507.16193v2">LMM4Edit</a>、<a href="https://arxiv.org/abs/2602.13028v1">Human-Aligned MLLM Judges</a>、<a href="https://arxiv.org/abs/2509.23909v3">EditScore</a>、<a href="https://arxiv.org/abs/2512.10284v2">MotionEdit</a>。</p>
+    </div>
+  </div>
+
+  <h2>3. 评测方法与指标总览</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>方法家族</th>
+        <th>典型指标 / 形式</th>
+        <th>优点</th>
+        <th>主要问题</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>传统图像质量 / 相似度</td>
+        <td>LPIPS、SSIM、PSNR、FID、IS、CLIPScore</td>
+        <td>简单、便宜、易复现</td>
+        <td>难同时判断“改对了没有”和“该保留的保住没有”</td>
+      </tr>
+      <tr>
+        <td>VLM / LMM judge</td>
+        <td>GPT-4V / GPT-4o / Gemini / Qwen-VL / GPT-5-mini 等</td>
+        <td>能同时理解图、文、变化</td>
+        <td>成本高、稳定性受 prompt 影响、细粒度几何可能不稳</td>
+      </tr>
+      <tr>
+        <td>mask-aware / region-aware</td>
+        <td>编辑区域定位 + 区域内修改分 + 区域外保持分</td>
+        <td>能区分该改与不该改</td>
+        <td>依赖区域定位；没有 mask 时更复杂</td>
+      </tr>
+      <tr>
+        <td>QA / VQA-style</td>
+        <td>自动生成问题，判断功能正确性</td>
+        <td>可解释、可自动化、易与 human study 对齐</td>
+        <td>问题生成质量影响评估可靠性</td>
+      </tr>
+      <tr>
+        <td>reward model / RL reward</td>
+        <td>scalar score、pairwise preference、rank-based reward</td>
+        <td>可直接用于优化</td>
+        <td>reward 设计难，易偏某一侧</td>
+      </tr>
+      <tr>
+        <td>task-specific consistency</td>
+        <td>ArcFace、OCR、pose estimator、optical flow 等</td>
+        <td>适合专用任务</td>
+        <td>不通用，跨任务可迁移性有限</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>4. 原文锚点：每种方法在讲什么</h2>
+
+  <h3>4.1 TIEdit / Evaluating Image Editing with LLMs</h3>
+  <blockquote>
+    “reliable assessment should simultaneously consider perceptual quality, alignment with textual instructions, and preservation of original image content.”
+  </blockquote>
+  <blockquote>
+    “15,360 mean opinion scores (MOSs) across three evaluation dimensions: perceptual quality, editing alignment, and content preservation.”
+  </blockquote>
+  <p>解读：TIEdit 把图像编辑评分明确拆成三轴，是一类非常适合作为 reward 设计模板的 benchmark。</p>
+
+  <h3>4.2 LMM4Edit</h3>
+  <blockquote>
+    “EBench-18K includes 1,080 source images with corresponding editing prompts across 21 tasks, 18K+ edited images produced by 17 state-of-the-art TIE models, 55K+ mean opinion scores (MOSs) ... and 18K+ question-answering (QA) pairs.”
+  </blockquote>
+  <blockquote>
+    “LMM4Edit, a LMM-based metric for evaluating image Editing models from perceptual quality, editing alignment, attribute preservation, and task-specific QA accuracy in an all-in-one manner.”
+  </blockquote>
+  <p>解读：LMM4Edit 强调“多维度 + QA”，适合把 reward 从单分数扩展成可解释多维分数。</p>
+
+  <h3>4.3 Human-Aligned MLLM Judges</h3>
+  <blockquote>
+    “decomposes common evaluation notions into twelve fine-grained interpretable factors spanning image preservation, edit quality, and instruction fidelity.”
+  </blockquote>
+  <blockquote>
+    “traditional image editing metrics are often poor proxies for these factors, failing to distinguish over-edited or semantically imprecise outputs...”
+  </blockquote>
+  <p>解读：与其把评分压成一个黑盒总分，不如拆成多个可解释因子，先定位再聚合。</p>
+
+  <h3>4.4 EditScore / EditReward-Bench</h3>
+  <blockquote>
+    “the lack of a high-fidelity, efficient reward signal.”
+  </blockquote>
+  <blockquote>
+    “EditScore takes (Instruction, Input Image, Output Image) as input, (Reasoning, Scalar Score) as output.”
+  </blockquote>
+  <blockquote>
+    “Semantic Consistency (SC) ... ensuring specified objects are correctly modified while unmentioned regions remain preserved.”
+  </blockquote>
+  <blockquote>
+    “Perceptual Quality (PQ) ... focusing on photorealism and the absence of artifacts. The final score is the geometric mean of the SC and PQ scores.”
+  </blockquote>
+  <p>解读：这是最接近“怎么把评估做成 reward”的路线。SC 负责改对，PQ 负责别改坏。</p>
+
+  <h3>4.5 BPM / Balancing Preservation and Modification</h3>
+  <blockquote>
+    “explicitly disentangling the image into editing-relevant and irrelevant regions for specific consideration.”
+  </blockquote>
+  <blockquote>
+    “Region-Aware Judge evaluates whether the position and size of the edited region align with instruction, and Semantic-Aware Judge further assesses the instruction content compliance within editing-relevant regions as well as content preservation within irrelevant regions...”
+  </blockquote>
+  <p>解读：这条路线最适合解决“preservation reward 难给”的问题，因为它直接把 reward 拆成 region-level 和 semantic-level 两层。</p>
+
+  <h3>4.6 AugCLIP / Preserve or Modify?</h3>
+  <blockquote>
+    “existing metrics have a context-blindness problem... biasing towards either modification or preservation.”
+  </blockquote>
+  <blockquote>
+    “CLIPScore ... tends to favor modification and ignore core attributes to be preserved”</blockquote>
+  <blockquote>
+    “AugCLIP ... balances preservation and modification by estimating the representation of an ideal edited image that aligns with the target text with minimum alteration on the source image.”
+  </blockquote>
+  <p>解读：单一指标会偏。reward 设计必须显式建模 preserve vs modify 的 trade-off。</p>
+
+  <h3>4.7 GIE-Bench</h3>
+  <blockquote>
+    “functional correctness, assessed via automatically generated multiple-choice questions...”
+  </blockquote>
+  <blockquote>
+    “image content preservation, which ensures that non-targeted regions of the image remain visually consistent using an object-aware masking technique and preservation scoring.”
+  </blockquote>
+  <blockquote>
+    “we compute the mean squared error between the original and edited images over unmasked regions ... after applying geometric alignment.”
+  </blockquote>
+  <p>解读：这是一个很实用的“VQA + mask 外保留”范式，尤其适合局部编辑。</p>
+
+  <h3>4.8 MotionEdit</h3>
+  <blockquote>
+    “For discriminative evaluation, we ... comparing the optical flow ... between the input and model-edited images against the input–ground truth flow.”
+  </blockquote>
+  <blockquote>
+    “For generative evaluation, we adopt Multimodal Large Language Model (MLLM)-based metrics to assess the fidelity, preservation, coherence, and overall quality of edited images.”
+  </blockquote>
+  <blockquote>
+    “our reward function must quantify the alignment between model-predicted motion and the ground-truth motion edit.”
+  </blockquote>
+  <p>解读：optical flow 是 motion editing 的专用一致性 reward，不是通用 reward；它对动作/姿态类编辑有效，对属性/风格类编辑不适用。</p>
+
+  <h2>5. 方法对比：每个方法的创新点是什么</h2>
+  <table>
+    <thead>
+      <tr><th>方法</th><th>创新点</th><th>更适合评什么</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>TIEdit</td><td>三维 MOS + EditProbe（中间层 probing）</td><td>通用 TIE 质量 / 对齐 / 保留</td></tr>
+      <tr><td>LMM4Edit</td><td>LMM-based metric + QA pairs</td><td>多任务综合评估</td></tr>
+      <tr><td>Human-Aligned MLLM Judges</td><td>12 因子细粒度拆分</td><td>解释性强的通用评估</td></tr>
+      <tr><td>EditScore</td><td>reward model 直接做成可训练 judge</td><td>在线 RL reward</td></tr>
+      <tr><td>BPM</td><td>region-aware + semantic-aware 双层判定</td><td>局部编辑 / 保留平衡</td></tr>
+      <tr><td>AugCLIP</td><td>修正 CLIP 偏 modification 的问题</td><td>preserve-modify 平衡</td></tr>
+      <tr><td>GIE-Bench</td><td>VQA functional correctness + object-aware preservation</td><td>grounded editing</td></tr>
+      <tr><td>MotionEdit</td><td>optical-flow motion reward + MLLM generative score</td><td>动作/姿态/几何变化</td></tr>
+    </tbody>
+  </table>
+
+  <h2>6. 发展趋势</h2>
+  <ul>
+    <li><strong>从单分数走向多维分数</strong>：quality、alignment、preservation、QA accuracy 分开看。</li>
+    <li><strong>从纯自动指标走向人类对齐</strong>：MOS、pairwise preference、human-validated benchmark 越来越多。</li>
+    <li><strong>从全图评估走向区域级评估</strong>：editing-relevant / irrelevant regions 被明确区分。</li>
+    <li><strong>从评估模型走向 reward model</strong>：不仅要“测”，还要“可用于 RL 训练”。</li>
+    <li><strong>从通用指标走向任务专用指标</strong>：人脸、文档、商品、动作、版式等都开始有专门一致性信号。</li>
+    <li><strong>从静态编辑走向动态编辑</strong>：motion / consistency / geometry 的专用评估开始出现。</li>
+  </ul>
+
+  <h2>7. 存在的问题</h2>
+  <ul>
+    <li><strong>指标之间互相冲突</strong>：改对和保留经常天然冲突。</li>
+    <li><strong>全图指标不够细</strong>：难识别 over-edit / under-edit / irrelevant-region drift。</li>
+    <li><strong>LMM judge 成本较高</strong>：不适合超大规模在线训练时直接全量使用。</li>
+    <li><strong>不同任务差异大</strong>：通用 reward 不能覆盖人脸、商品、文档、motion 等所有场景。</li>
+    <li><strong>人类偏好仍是最终标准</strong>：自动指标和人类判断仍有 gap。</li>
+  </ul>
+
+  <h2>8. 对 reward 设计的启发</h2>
+  <p>从这些论文里可以得到一个较稳的原则：<strong>reward 不能只看“输出图好不好”，而要同时看“改对了吗、保住了吗、自然吗、任务专用一致吗”</strong>。</p>
+
+  <div class="note ok">
+    <strong>建议的 reward 结构：</strong>
+    <div class="small">R = instruction reward + target edit reward + non-target preservation reward + quality reward + task-specific reward</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>reward 项</th><th>可借鉴方法</th><th>落地建议</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>instruction reward</td><td>TIEdit、EditScore、GIE-Bench</td><td>用 VLM / VQA 判断目标是否完成</td></tr>
+      <tr><td>target edit reward</td><td>BPM、AugCLIP</td><td>先定位编辑区域，再评语义修改是否正确</td></tr>
+      <tr><td>non-target preservation</td><td>BPM、GIE-Bench、TIEdit</td><td>mask 外区域用 region-aware consistency 评分</td></tr>
+      <tr><td>quality reward</td><td>TIEdit、LMM4Edit、EditScore</td><td>用 perceptual quality / artifact / realism</td></tr>
+      <tr><td>task-specific reward</td><td>MotionEdit、Human-Aligned Judges</td><td>按任务加入身份/结构/motion/OCR 等专用项</td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#f6f8fa;padding:10px;border-radius:6px;white-space:pre-wrap;">
+一个实用的聚合例子：
+R_inst = VLM/Judge 对指令完成度的评分
+R_edit = 目标区域修改正确性的评分
+R_pres = 非目标区域保持一致性的评分
+R_qual = 图像质量 / 伪影惩罚
+R_task = 身份 / OCR / motion / layout 等任务项
+
+R_total = w1*R_inst + w2*R_edit + w3*R_pres + w4*R_qual + w5*R_task
+
+更稳的做法：
+- 对 R_inst 或 R_edit 设门槛，失败时整体分数不能太高
+- 对 R_pres 设上限惩罚，避免过度修改
+- 在 motion / face / document 等任务上加入 task-specific reward
+  </div>
+
+  <h2>9. 建议的 survey 结论段</h2>
+  <p>可以用下面这段作为最终总结思路：</p>
+  <blockquote>
+    图像编辑评估正在从单一图文相似度，转向多维、细粒度、可解释且与人类偏好对齐的综合评估。未来更有前景的方向不是寻找一个万能指标，而是构建“任务理解 + 区域分解 + preservation / modification 平衡 + 任务专用 consistency”的组合式 reward 与 benchmark 体系。
+  </blockquote>
+
+  <h2>10. 参考论文</h2>
+  <ul>
+    <li><a href="https://arxiv.org/abs/2603.19775v2">TIEdit / Evaluating Image Editing with LLMs</a></li>
+    <li><a href="https://arxiv.org/abs/2507.16193v2">LMM4Edit</a></li>
+    <li><a href="https://arxiv.org/abs/2602.13028v1">Human-Aligned MLLM Judges</a></li>
+    <li><a href="https://arxiv.org/abs/2509.23909v3">EditScore / EditReward-Bench</a></li>
+    <li><a href="https://arxiv.org/abs/2506.13827v1">BPM</a></li>
+    <li><a href="https://arxiv.org/abs/2410.11374v3">AugCLIP</a></li>
+    <li><a href="https://arxiv.org/abs/2505.11493v3">GIE-Bench</a></li>
+    <li><a href="https://arxiv.org/abs/2512.10284v2">MotionEdit</a></li>
+  </ul>
+
+  <div class="note">
+    <strong>本地目录：</strong><code>/mnt/vlm-ks3/FoundationModel/dataset/pose_intriduct/composition2/image_edit_eval_survey/</code>
+  </div>
+</body>
+</html>
